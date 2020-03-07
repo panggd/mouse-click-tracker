@@ -1,25 +1,51 @@
 version: '3.7'
 
-networks:
-    services:
-      ipam:
-        config:
-          - subnet: 10.0.0.0/8
-
 services:
     zookeeper:
         image: wurstmeister/zookeeper
         ports:
-           - "2181:2181"
+            - "${ZOOKEEPER_PORT}:${ZOOKEEPER_PORT}"
     kafka:
         image: wurstmeister/kafka
         ports:
-            - "9092"
+            - "${KAFKA_PORT}:${KAFKA_PORT}"
+        expose:
+            - "${KAFKA_INTERNAL_PORT}"
         links:
             - zookeeper
         environment:
-            KAFKA_ADVERTISED_HOST_NAME: 10.0.0.10
-            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-            KAFKA_CREATE_TOPICS: "topic1:1:3"
+            KAFKA_ADVERTISED_LISTENERS: INSIDE://:${KAFKA_INTERNAL_PORT},OUTSIDE://:${KAFKA_PORT}
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+            KAFKA_LISTENERS: INSIDE://:${KAFKA_INTERNAL_PORT},OUTSIDE://:${KAFKA_PORT}
+            KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZOOKEEPER_PORT}
+            KAFKA_CREATE_TOPICS: "topic1:3:1"
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
+    api:
+        build: ./api-kafka
+        environment:
+            PORT: ${KAFKA_API_PORT}
+            KAFKA_HOST: ${KAFKA_HOST}
+            KAFKA_PORT: ${KAFKA_PORT}
+        ports:
+            - ${KAFKA_API_PORT}:${KAFKA_API_PORT}
+        expose:
+            - ${KAFKA_API_PORT}
+        links:
+            - zookeeper
+            - kafka
+    app-master:
+        build: ./app-master
+        depends_on:
+            - zookeeper
+            - kafka
+            - api
+        ports:
+            - ${REACT_MASTER_PORT}:${REACT_MASTER_PORT}
+        expose:
+            - ${REACT_MASTER_PORT}
+        links:
+            - zookeeper
+            - kafka
+            - api
