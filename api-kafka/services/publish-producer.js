@@ -1,10 +1,9 @@
 const moment = require('moment');
-const publishProducer = async (req, res, producer) => {
+const publishProducer = (req, res, producer) => {
   let results = {};
   try {
     const topic = process.env.KAFKA_TOPIC;
     payload = JSON.stringify(req.body);
-    console.log(payload);
     let payloads = [
       {
         topic: topic,
@@ -15,7 +14,6 @@ const publishProducer = async (req, res, producer) => {
     ];
     producer.send(payloads, (err, data) => {
       if (err) throw new Error(err);
-      console.log(data);
       res.status(204);
     });
   } catch(error) {

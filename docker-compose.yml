@@ -24,15 +24,19 @@ services:
             - /var/run/docker.sock:/var/run/docker.sock
     api:
         build: ./api-kafka
+        depends_on:
+            - zookeeper
+            - kafka
         environment:
-            PORT: ${KAFKA_API_PORT}
+            PORT: ${API_PORT}
             KAFKA_HOST: ${KAFKA_HOST}
             KAFKA_PORT: ${KAFKA_PORT}
             KAFKA_TOPIC: ${KAFKA_TOPIC}
+            WAIT_MS: ${API_WAIT_MS}
         ports:
-            - ${KAFKA_API_PORT}:${KAFKA_API_PORT}
+            - ${API_PORT}:${API_PORT}
         expose:
-            - ${KAFKA_API_PORT}
+            - ${API_PORT}
         links:
             - zookeeper
             - kafka
