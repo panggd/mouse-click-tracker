@@ -54,3 +54,17 @@ services:
             - zookeeper
             - kafka
             - api
+    app-replicate:
+        build: ./app-replicate
+        depends_on:
+            - zookeeper
+            - kafka
+            - api
+        ports:
+            - ${REACT_REPLICATE_PORT}:${REACT_REPLICATE_PORT}
+        expose:
+            - ${REACT_REPLICATE_PORT}
+        links:
+            - zookeeper
+            - kafka
+            - api
