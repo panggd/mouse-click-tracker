@@ -1,4 +1,5 @@
 const bodyParser = require("body-parser");
+const cors = require('cors');
 const express = require("express");
 const expressWs = require("express-ws");
 const kafka = require("kafka-node");
@@ -16,6 +17,7 @@ const KAFKA_TOPIC = process.env.KAFKA_TOPIC;
 
 var producer = null;
 
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -42,13 +44,13 @@ setTimeout(() => {
       console.log("kafka producer is ready");
     });
 
-    producer.on('error', (err) => {
+    producer.on("error", (err) => {
       console.error(err, err.stack);
     });
 
-    const wss = expressWS.getWss('/stream');
+    const wss = expressWS.getWss("/stream");
 
-    consumer.on('message', (message) => {
+    consumer.on("message", (message) => {
       wss.clients.forEach((client) => {
         client.send(JSON.stringify(message));
       });
