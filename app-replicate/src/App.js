@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-// import WebSocket from "ws";
 
 class App extends Component {
 
